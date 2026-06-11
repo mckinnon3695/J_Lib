@@ -82,6 +82,24 @@ def parse_chains(path=OPTIONS_XLSX) -> list[Chain]:
     return sorted(chains, key=lambda c: c.days)
 
 
+def parse_chains_csv(path) -> list[Chain]:
+    """Load chains from the external-data CSV contract (options_chains.csv,
+    see DATA_REQUEST_PROMPT.md): one row per quote with columns
+    snapshot_date, contract, expiry_date, days, future, strike, side, bid,
+    ask, last, iv, volume. side is 'call' or 'put'."""
+    df = pd.read_csv(path, parse_dates=["snapshot_date", "expiry_date"])
+    chains = []
+    for (contract, expiry), grp in df.groupby(["contract", "expiry_date"]):
+        chains.append(Chain(
+            label=expiry.strftime("%b-%y"), contract=str(contract),
+            expiry=expiry, days=int(grp["days"].iloc[0]),
+            future=float(grp["future"].iloc[0]),
+            quotes=grp[["strike", "side", "bid", "ask", "last", "iv",
+                        "volume"]].assign(
+                mid=lambda d: (d.bid + d.ask) / 2).reset_index(drop=True)))
+    return sorted(chains, key=lambda c: c.days)
+
+
 def otm_smile(chain: Chain) -> pd.DataFrame:
     """OTM implied vols from quoted IVM: puts below the future, calls above.
     Drops strikes with no two-sided market (bid <= 0)."""

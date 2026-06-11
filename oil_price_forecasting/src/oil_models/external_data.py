@@ -36,6 +36,16 @@ SCHEMAS = {
     "igrea_monthly.csv": (
         ["date", "igrea"],
         "Kilian/Dallas Fed IGREA index, monthly, through latest"),
+    "spot_prices_daily.csv": (
+        ["date", "brent_usd", "wti_usd"],
+        "Daily Brent & WTI spot, USD/bbl - enables the end-of-month no-change benchmark robustness check"),
+    "rac_price_monthly.csv": (
+        ["date", "rac_usd"],
+        "US refiners' acquisition cost of crude (composite), USD/bbl, monthly - extends the Kilian price series past 2025"),
+    "options_chains.csv": (
+        ["snapshot_date", "contract", "expiry_date", "days", "future",
+         "strike", "side", "bid", "ask", "last", "iv", "volume"],
+        "WTI (and optionally Brent) futures option chains, wide strikes, all listed monthly expiries"),
 }
 
 
