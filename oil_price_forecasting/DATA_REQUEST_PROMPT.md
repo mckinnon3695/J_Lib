@@ -24,8 +24,16 @@ Monthly files use the first of the month as the date. Free sources: FRED
 (https://fred.stlouisfed.org — CSV endpoint
 https://fred.stlouisfed.org/graph/fredgraph.csv?id=SERIES), EIA Open Data
 API v2 (https://www.eia.gov/opendata/ — free API key), and the Dallas Fed.
-For futures and options I have IBKR Gateway running locally (Client Portal
-API at https://localhost:5000/v1/api, ignore the self-signed certificate).
+
+For futures and options, Interactive Brokers Trader Workstation is running
+locally with the socket API enabled: host 127.0.0.1, port 7947 (custom -
+not the default 7496/4001), Read-Only API mode (market data works fine;
+never attempt to place orders). Connect with the ib_async Python library
+(pip install ib_async; ib.connect('127.0.0.1', 7947, clientId=11)).
+If a live market-data subscription is missing for a contract, fall back to
+delayed data via ib.reqMarketDataType(3) and note it in the output. Respect
+IBKR pacing limits: request quotes in batches (~50 contracts at a time)
+with short pauses, and use snapshot=True for one-shot quotes.
 
 Create these 11 files:
 
@@ -75,26 +83,33 @@ Create these 11 files:
    latest. EIA series EER_EPMRU_PF4_RGC_DPG (monthly).
 
 10. futures_curve_monthly.csv — columns: date, symbol, months_ahead, settle_usd
-    Month-end settlement prices for WTI (symbol CL, NYMEX) and Brent
-    (symbol BZ) futures, months_ahead = 1..24, each month-end as far back
-    as obtainable through latest. Preferred: IBKR Client Portal API
-    (contracts via /iserver/secdef/search, history via
-    /iserver/marketdata/history). Fallback: EIA "Cushing OK Crude Oil
-    Future Contract 1-4" (PET.RCLC1.M..PET.RCLC4.M) as symbol CL,
-    months_ahead 1..4, and note the limitation.
+    Month-end settlement prices for WTI (symbol CL, exchange NYMEX) and
+    Brent (symbol BZ) futures, months_ahead = 1..24, each month-end as far
+    back as obtainable through latest. Via TWS: qualify each listed
+    contract month (Future(symbol='CL', exchange='NYMEX',
+    lastTradeDateOrContractMonth=...)), pull daily bars with
+    ib.reqHistoricalData (whatToShow='TRADES', 1 day bars), and keep each
+    month's last business day. Note IBKR holds expired-future history for
+    roughly 2 years only. For deeper history, fall back to EIA "Cushing OK
+    Crude Oil Future Contract 1-4" (PET.RCLC1.M..PET.RCLC4.M) as symbol
+    CL, months_ahead 1..4, and note the limitation.
 
 11. options_chains.csv — columns: snapshot_date, contract, expiry_date,
     days, future, strike, side, bid, ask, last, iv, volume
-    A fresh snapshot of WTI (CL) futures option chains from IBKR, one row
-    per option quote. side is the string "call" or "put"; days = calendar
-    days from snapshot to expiry; future = the underlying futures price at
-    the snapshot; iv = implied vol in percent (e.g. 47.3). Requirements:
+    A fresh snapshot of WTI (CL) futures option chains from IBKR via TWS,
+    one row per option quote. side is the string "call" or "put"; days =
+    calendar days from snapshot to expiry; future = the underlying futures
+    price at the snapshot; iv = implied vol in percent (e.g. 47.3), taken
+    from IBKR's model greeks (ticker.modelGreeks.impliedVol x 100, or the
+    bid/ask greeks average). Recipe: ib.reqSecDefOptParams for the chain
+    parameters, then FuturesOption contracts per expiry/strike/right on
+    NYMEX, qualified and quoted in batches. Requirements:
     - ALL monthly expiries listed out to at least 12 months.
     - The WIDEST strike range available — deep out-of-the-money wings
       matter most; go to at least $150 strikes on the call side and $40 on
       the put side where listed, even if bids are pennies.
     - Take the snapshot during US trading hours if possible so quotes are
-      live and two-sided.
+      live and two-sided; if only delayed data is available, say so.
     - If Brent (BZ) chains are accessible, append them too (same columns;
       contract distinguishes them).
 
