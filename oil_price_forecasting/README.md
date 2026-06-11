@@ -12,11 +12,13 @@ laden crude flows from 2026-02-28.
 
 ```bash
 pip install -r requirements.txt
-python scripts/run_all.py          # full pipeline (~2-3 min, 1000 bootstrap reps)
-python scripts/run_all.py --fast   # smoke run (200 reps, ~30 s)
+python scripts/run_all.py            # full pipeline (~2-3 min, 1000 bootstrap reps)
+python scripts/run_all.py --fast     # smoke run (200 reps, ~30 s)
+python scripts/options_analysis.py   # options-implied tail risk (needs run_all first)
 ```
 
-Outputs: `reports/RESULTS.md` + `reports/figures/` + `data/processed/`.
+Outputs: `reports/RESULTS.md`, `reports/OPTIONS_TAIL_RISK.md`,
+`reports/figures/`, `data/processed/`.
 
 ## What gets built
 
@@ -29,6 +31,7 @@ Outputs: `reports/RESULTS.md` + `reports/figures/` + `data/processed/`.
 | Scenarios | Hormuz transit loss → structural supply shocks → conditional price paths (25% / 50% / full pass-through, optional 1990-sized precautionary demand overlay) | `src/oil_models/scenarios.py` |
 | Evaluation | Recursive out-of-sample: MSPE vs no-change, Diebold-Mariano, directional accuracy; equal-weight combination | `src/oil_models/evaluate.py`, `combine.py` |
 | Volatility | GARCH(1,1)-t on monthly returns, separate from the level forecast | `src/oil_models/volatility.py` |
+| Options tail risk | Breeden-Litzenberger risk-neutral densities from WTI option chains; market-implied probabilities of the SVAR scenario levels | `src/oil_models/options_rnd.py` |
 
 Notebooks in `notebooks/` are thin interactive wrappers over the package.
 
