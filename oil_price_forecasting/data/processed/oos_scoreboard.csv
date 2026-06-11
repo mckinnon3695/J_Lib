@@ -1,0 +1,21 @@
+horizon,model,mspe_ratio,dm_pvalue,directional_accuracy,n
+1,no-change,1.0,,,396
+1,AR(1) returns,0.8589,0.2074,0.5833,396
+1,VAR(24),1.0449,0.6643,0.5631,396
+1,supply-demand regression,1.0115,0.4173,0.5126,396
+1,combination,0.8816,0.0275,0.5884,396
+3,no-change,1.0,,,394
+3,AR(1) returns,1.0807,0.36,0.5736,394
+3,VAR(24),1.3256,0.0002,0.5254,394
+3,supply-demand regression,1.0273,0.192,0.5102,394
+3,combination,1.0127,0.6556,0.5635,394
+6,no-change,1.0,,,391
+6,AR(1) returns,1.1102,0.0669,0.5396,391
+6,VAR(24),1.4353,0.0029,0.5064,391
+6,supply-demand regression,1.0661,0.2216,0.4399,391
+6,combination,1.0643,0.0903,0.5141,391
+12,no-change,1.0,,,385
+12,AR(1) returns,1.0944,0.09,0.5169,385
+12,VAR(24),1.3777,0.043,0.5273,385
+12,supply-demand regression,1.1183,0.0925,0.4156,385
+12,combination,1.0793,0.1647,0.5351,385
